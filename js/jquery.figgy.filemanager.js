@@ -2,7 +2,8 @@
 $.widget( "figgy.filemanager", {
     options: {
         images: [],
-        selected: {
+        selected: [],
+        blank: {
           'id': '',
           'label': '',
           'url': '',
@@ -13,17 +14,25 @@ $.widget( "figgy.filemanager", {
     },
     _create: function() {
 
-        this.createGallery()
-        this.createDetailSidebar()
-        this.createForm()
-        this.createControls()
+        this._createGallery()
+        this._createDetailSidebar()
+        this._createForm()
+        this._createControls()
 
         var _this = this;
 
         // add event handlers
         this._on(this.document, {
   				'click.thumbnail': function(event) {
-            _this.handleSelectPage(event.target.id)
+            if (event.metaKey) {
+              console.log("CMD")
+              _this.handleSelectPage(event.target.id)
+            } else if (event.shiftKey) {
+              console.log("shift")
+            } else {
+              this.options.selected = [] // clear all selected
+              _this.handleSelectPage(event.target.id)
+            }
   				}
   			});
 
@@ -53,13 +62,13 @@ $.widget( "figgy.filemanager", {
         // paint the img_collection here
         this.refresh()
     },
-    createGallery: function() {
+    _createGallery: function() {
       var $content = $('<div class="content"></div>')
       var $gallery = $('<div class="img_gallery" id="sortable" class="col-md-12"></div>')
       $content.append( $gallery )
       this.element.append( $content )
     },
-    createDetailSidebar: function() {
+    _createDetailSidebar: function() {
       var $sidebar = $('<div class="sidebar"></div>')
       var $detail = $('<div id="detail" class="actions"></div>')
       var $img_detail = $('<img id="detail_img" src=""></img>')
@@ -67,7 +76,7 @@ $.widget( "figgy.filemanager", {
       $sidebar.append( $detail )
       this.element.append( $sidebar )
     },
-    createForm: function() {
+    _createForm: function() {
       var $form = $('<div class="form actions"></div>')
 
       var markup = '<form id="page_metadata_form" class="form-horizontal">'+
@@ -102,27 +111,27 @@ $.widget( "figgy.filemanager", {
       $form.append( markup )
       this.element.append( $form )
     },
-    createControls: function() {
+    _createControls: function() {
       var $controls = $('<div class="controls"></div>')
       var $button = $('<button id="save_btn" name="button" type="button" class="btn btn-primary">Save</button>')
       $controls.append( $button )
       this.element.append( $controls )
     },
-    getImageIndexById: function( id ) {
+    getImageById: function( id ) {
       var elementPos = this.options.images.map(function(image) {
         return image.id
       }).indexOf(id)
       return this.options.images[elementPos]
     },
     handleSelectPage: function( select_id ) {
-      var selected = this.getImageIndexById(select_id)
+      var selected = this.getImageById(select_id)
       $( '#label' ).val(selected.label)
       $( '#pageType option[value="'+ selected.pageType +'"]' ).prop('selected', true)
       $( '#isThumb' ).prop( "checked", selected.isThumb )
       $( '#isStart' ).prop( "checked", selected.isStart )
       $( '#canvas_id' ).val(selected.id)
       $( '#detail_img' ).attr("src",selected.url)
-      this.options.selected = selected
+      this.options.selected.push(selected)
     },
     paintPage: function( page, index, array ) {
       $( "<div id='" + index + "' class='thumbnail'></div>" )
