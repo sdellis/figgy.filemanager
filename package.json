@@ -1,0 +1,25 @@
+{
+  "name": "figgy.filemanager",
+  "version": "1.0.0",
+  "description": "Re-order and label pages with Figgy Filemanager jQuery UI Widget",
+  "main": "index.js",
+  "scripts": {
+    "test": "nightwatch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sdellis/figgy.filemanager.git"
+  },
+  "author": "shaun@sdellis.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sdellis/figgy.filemanager/issues"
+  },
+  "homepage": "https://github.com/sdellis/figgy.filemanager#readme",
+  "devDependencies": {
+    "env2": "^2.2.0",
+    "express": "^4.15.4",
+    "nightwatch": "^0.9.16",
+    "selenium-download": "^2.0.10"
+  }
+}
