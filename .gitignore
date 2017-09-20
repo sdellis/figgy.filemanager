@@ -1,5 +1,6 @@
 .DS_Store
 screenshots/
+reports/
 node_modules/
 dist/
 npm-debug.log*
