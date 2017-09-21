@@ -93,3 +93,7 @@ body {
 .selected {
   border: 2px solid #FF0000;
 }
+
+.hasChanged {
+  background-color:Tomato
+}

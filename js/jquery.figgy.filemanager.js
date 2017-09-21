@@ -13,7 +13,7 @@ $.widget( "figgy.filemanager", {
         }
     },
     _create: function() {
-
+        this.changeList = []
         this._createGallery()
         this._createDetailSidebar()
         this._createForm()
@@ -24,15 +24,7 @@ $.widget( "figgy.filemanager", {
         // add event handlers
         this._on(this.document, {
   				'click.thumbnail': function(event) {
-            if (event.metaKey) {
-              console.log("CMD")
-              _this.handleSelectPage(event.target.id)
-            } else if (event.shiftKey) {
-              console.log("shift")
-            } else {
-              this.deselectAll()
-              _this.handleSelectPage(event.target.id)
-            }
+            _this.handleSelectPage(event)
   				}
   			});
 
@@ -45,6 +37,7 @@ $.widget( "figgy.filemanager", {
         this._on(this.document, {
           'input#label': function(event) {
             this.options.selected[0].label = $( '#label' ).val()
+            this.applyChanges()
   				}
         });
 
@@ -60,6 +53,21 @@ $.widget( "figgy.filemanager", {
 
         // paint the img_collection here
         this.refresh()
+    },
+    applyChanges: function() {
+      // TODO: Keep a list of all changed ids so we can mark them as changed
+      // or perhaps add a property to images
+      for (i = 0; i < this.options.selected.length; i++) {
+        var index = this.options.images.map(function(img) {
+          return img.id;
+        }).indexOf(this.options.selected[i].id);
+        this.options.images[index] = this.options.selected[i]
+        if (this.changeList.indexOf(this.options.selected[i].id) == -1) {
+          this.changeList.push(this.options.selected[i].id)
+        }
+      }
+
+      this.refresh()
     },
     _createGallery: function() {
       var $content = $('<div class="content"></div>')
@@ -134,8 +142,22 @@ $.widget( "figgy.filemanager", {
       }).indexOf(id)
       return this.options.images[elementPos]
     },
-    handleSelectPage: function( select_id ) {
-      this.options.selected.push(this.getImageById(select_id))
+    handleSelectPage: function( event ) {
+      if (event.metaKey) {
+        console.log("CMD")
+        if(this.isSelected(event.target.id)){
+
+        }else{
+          this.options.selected.push(this.getImageById(event.target.id))
+        }
+      } else if (event.shiftKey) {
+        console.log("Shift")
+      } else {
+        this.deselectAll()
+        this.options.selected.push(this.getImageById(event.target.id))
+      }
+
+      // update form panel
       $( '.formContent' ).hide()
       switch (this.options.selected.length) {
         case 0:
@@ -154,11 +176,25 @@ $.widget( "figgy.filemanager", {
         default:
           $( '#multiSelected' ).show()
       }
-      console.log(this.options.selected)
       this._paintSelected()
     },
+    hasChanged: function(id) {
+      if (this.changeList.indexOf(id) == -1) {
+        return false
+      } else {
+        return true
+      }
+    },
+    isSelected: function(select_id) {
+      // true or false
+    },
     paintPage: function( page, index, array ) {
-      $( "<div id='" + index + "' class='thumbnail'></div>" )
+      console.log(this.images)
+      $( "<div id='" + index + "' class='thumbnail " +
+      // need to refactor this so that I can access the changelist...
+      // or simply add the changed property to img_collection 
+      // this.hasChanged(page.id) ? 'hasChanged' : '' +
+      "'></div>" )
       .appendTo( "#sortable" )
       .html( "<img id='" + page.id + "' src='" +
             page.url +
@@ -187,14 +223,7 @@ $.widget( "figgy.filemanager", {
       this._create();
     },
     save: function() {
-      for (i = 0; i < this.options.selected.length; i++) {
-        var index = this.options.images.map(function(img) {
-          return img.id;
-        }).indexOf(this.options.selected[i].id);
-        this.options.images[index] = this.options.selected[i]
-      }
-
-      this.refresh()
+      this.applyChanges()
       //  This could save it to a server if we want
       //  but for now just emit an event
       this.element.trigger( "objectSaved", [this.options.images] );
