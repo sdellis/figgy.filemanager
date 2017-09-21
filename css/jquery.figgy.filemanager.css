@@ -44,7 +44,7 @@ body {
     width: 100vw;
   }
 
-.form {
+.formPanel {
   position: absolute;
   bottom: 10px;
   left: 0;
@@ -52,6 +52,14 @@ body {
   width: 60%;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+#singleSelected {
+  display: none;
+}
+
+#multiSelected {
+  display: none;
 }
 
 .controls {
@@ -80,4 +88,8 @@ body {
   width: 38.5%;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+.selected {
+  border: 2px solid #FF0000;
 }
