@@ -13,7 +13,7 @@ $.widget( "figgy.filemanager", {
         }
     },
     _create: function() {
-
+        this.changeList = []
         this._createGallery()
         this._createDetailSidebar()
         this._createForm()
@@ -24,15 +24,7 @@ $.widget( "figgy.filemanager", {
         // add event handlers
         this._on(this.document, {
   				'click.thumbnail': function(event) {
-            if (event.metaKey) {
-              console.log("CMD")
-              _this.handleSelectPage(event.target.id)
-            } else if (event.shiftKey) {
-              console.log("shift")
-            } else {
-              this.deselectAll()
-              _this.handleSelectPage(event.target.id)
-            }
+            _this.handleSelectPage(event)
   				}
   			});
 
@@ -45,6 +37,7 @@ $.widget( "figgy.filemanager", {
         this._on(this.document, {
           'input#label': function(event) {
             this.options.selected[0].label = $( '#label' ).val()
+            this.applyChanges()
   				}
         });
 
@@ -60,6 +53,21 @@ $.widget( "figgy.filemanager", {
 
         // paint the img_collection here
         this.refresh()
+    },
+    applyChanges: function() {
+      // TODO: Keep a list of all changed ids so we can mark them as changed
+      // or perhaps add a property to images
+      for (i = 0; i < this.options.selected.length; i++) {
+        var index = this.options.images.map(function(img) {
+          return img.id;
+        }).indexOf(this.options.selected[i].id);
+        this.options.images[index] = this.options.selected[i]
+        if (this.changeList.indexOf(this.options.selected[i].id) == -1) {
+          this.changeList.push(this.options.selected[i].id)
+        }
+      }
+
+      this.refresh()
     },
     _createGallery: function() {
       var $content = $('<div class="content"></div>')
@@ -113,29 +121,46 @@ $.widget( "figgy.filemanager", {
     },
     _createControls: function() {
       var $controls = $('<div class="controls"></div>')
-      var $button = $('<button id="save_btn" name="button" type="button" class="btn btn-primary">Save</button>')
+      var $button = $('<button id="save_btn" name="button" type="button" class="btn btn-lg btn-primary">Save</button>')
       $controls.append( $button )
       this.element.append( $controls )
     },
     deselectAll: function() {
       this.options.selected = []
     },
-    _paintSelected: function() {
-      // loop through and add class to all the ids
-      $('.thumbnail img').removeClass('selected')
-      for (i = 0; i < this.options.selected.length; i++) {
-        var element = document.getElementById(this.options.selected[i].id)
-        element.className += " selected";
-      }
+    deselectOne: function() {
+      this.options.selected.splice(this.getImageById(event.target.id), 1)
     },
-    getImageById: function( id ) {
-      var elementPos = this.options.images.map(function(image) {
+    getImageIndexById: function( id ) {
+      return this.options.images.map(function(image) {
         return image.id
       }).indexOf(id)
+    },
+    getImageById: function( id ) {
+      var elementPos = this.getImageIndexById(id)
       return this.options.images[elementPos]
     },
-    handleSelectPage: function( select_id ) {
-      this.options.selected.push(this.getImageById(select_id))
+    getSelectedIndexById: function( id ) {
+      return this.options.selected.map(function(image) {
+        return image.id
+      }).indexOf(id)
+    },
+    handleSelectPage: function( event ) {
+      if (event.metaKey) {
+        if(this.isSelected(event.target.id)){
+          this.options.selected.splice(this.getSelectedIndexById(event.target.id), 1)
+          console.log(this.options.selected)
+        }else{
+          this.options.selected.push(this.getImageById(event.target.id))
+        }
+      } else if (event.shiftKey) {
+        console.log("Shift + Click")
+      } else {
+        this.deselectAll()
+        this.options.selected.push(this.getImageById(event.target.id))
+      }
+
+      // update form panel
       $( '.formContent' ).hide()
       switch (this.options.selected.length) {
         case 0:
@@ -154,15 +179,45 @@ $.widget( "figgy.filemanager", {
         default:
           $( '#multiSelected' ).show()
       }
-      console.log(this.options.selected)
       this._paintSelected()
     },
-    paintPage: function( page, index, array ) {
-      $( "<div id='" + index + "' class='thumbnail'></div>" )
-      .appendTo( "#sortable" )
-      .html( "<img id='" + page.id + "' src='" +
-            page.url +
-            "'><div class='caption'>" + page.label + "</div>" );
+    hasChanged: function(id) {
+      if (this.changeList.indexOf(id) == -1) {
+        return false
+      } else {
+        return true
+      }
+    },
+    isSelected: function(select_id) {
+      var index = this.options.selected.map(function(img) {
+        return img.id;
+      }).indexOf(select_id);
+      if( index == -1) {
+        return false
+      } else {
+        return true
+      }
+    },
+    _paintPages: function() {
+      var totalImages = this.options.images.length
+      _this = this
+      for (var i = 0; i < totalImages; i++) {
+        var item_state = _this.hasChanged(_this.options.images[i].id) ? 'hasChanged' : ''
+        var $thumbnail = $( "<div id='" + i + "' class='thumbnail " + item_state + "'></div>" )
+        img_markup = "<img id='" + _this.options.images[i].id + "' src='" +
+              _this.options.images[i].url +
+              "'><div class='caption'>" + _this.options.images[i].label + "</div>"
+        $thumbnail.append(img_markup)
+        $( '#sortable' ).append($thumbnail)
+      }
+    },
+    _paintSelected: function() {
+      // loop through and add class to all the ids
+      $('.thumbnail img').removeClass('selected')
+      for (i = 0; i < this.options.selected.length; i++) {
+        var element = document.getElementById(this.options.selected[i].id)
+        element.className += " selected";
+      }
     },
     _saveSort: function( sortedIDs ) {
       var new_imgArr = [];
@@ -180,24 +235,27 @@ $.widget( "figgy.filemanager", {
     },
     refresh: function() {
       $( "#sortable" ).empty();
-      this.options.images.forEach(this.paintPage);
+      this._paintPages()
     },
     reset: function() {
       this._destroy();
       this._create();
     },
     save: function() {
-      for (i = 0; i < this.options.selected.length; i++) {
-        var index = this.options.images.map(function(img) {
-          return img.id;
-        }).indexOf(this.options.selected[i].id);
-        this.options.images[index] = this.options.selected[i]
-      }
-
-      this.refresh()
+      this.applyChanges()
       //  This could save it to a server if we want
       //  but for now just emit an event
-      this.element.trigger( "objectSaved", [this.options.images] );
+      this.element.trigger( "objectSaved", [this.options.images] )
+      // TODO: investigate why reset seems to prevent us from listening for the 'metaKey'
+      // Implementing "softReset()"" now as a workaround.
+      // this.reset()
+      this.softReset()
+      alert('Changes saved!')
+    },
+    softReset: function() {
+      this.deselectAll()
+      this.changeList = []
+      this.refresh()
     },
     _destroy: function() {
         this.element
