@@ -146,18 +146,19 @@ $.widget( "figgy.filemanager", {
       }).indexOf(id)
     },
     handleSelectPage: function( event ) {
+      var image_id = $(event.target).find( "img" ).attr('id');
       if (event.metaKey) {
-        if(this.isSelected(event.target.id)){
-          this.options.selected.splice(this.getSelectedIndexById(event.target.id), 1)
+        if(this.isSelected(image_id)){
+          this.options.selected.splice(this.getSelectedIndexById(image_id), 1)
           console.log(this.options.selected)
         }else{
-          this.options.selected.push(this.getImageById(event.target.id))
+          this.options.selected.push(this.getImageById(image_id))
         }
       } else if (event.shiftKey) {
         console.log("Shift + Click")
       } else {
         this.deselectAll()
-        this.options.selected.push(this.getImageById(event.target.id))
+        this.options.selected.push(this.getImageById(image_id))
       }
 
       // update form panel
@@ -167,6 +168,7 @@ $.widget( "figgy.filemanager", {
           $( '#noneSelected' ).show()
           break
         case 1:
+          console.log(this.options.selected)
           var selected = this.options.selected[0]
           $( '#label' ).val(selected.label)
           $( '#pageType option[value="'+ selected.pageType +'"]' ).prop('selected', true)
@@ -204,18 +206,19 @@ $.widget( "figgy.filemanager", {
       for (var i = 0; i < totalImages; i++) {
         var item_state = _this.hasChanged(_this.options.images[i].id) ? 'hasChanged' : ''
         var $thumbnail = $( "<div id='" + i + "' class='thumbnail " + item_state + "'></div>" )
-        img_markup = "<img id='" + _this.options.images[i].id + "' src='" +
+        img_markup = "<img class='thumb' id='" + _this.options.images[i].id + "' src='" +
               _this.options.images[i].url +
               "'><div class='caption'>" + _this.options.images[i].label + "</div>"
         $thumbnail.append(img_markup)
         $( '#sortable' ).append($thumbnail)
       }
+      this._paintSelected()
     },
     _paintSelected: function() {
       // loop through and add class to all the ids
-      $('.thumbnail img').removeClass('selected')
+      $('.thumbnail').removeClass('selected')
       for (i = 0; i < this.options.selected.length; i++) {
-        var element = document.getElementById(this.options.selected[i].id)
+        var element = document.getElementById(this.options.selected[i].id).parentElement
         element.className += " selected";
       }
     },
