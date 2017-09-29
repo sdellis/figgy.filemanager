@@ -41,7 +41,7 @@ body {
  #filemanager {
     position: relative;
     height:85vh;
-    width: 100vw;
+    width: 98vw;
   }
 
 .formPanel {
@@ -76,7 +76,6 @@ body {
   left: 0;
   height: 70%;
   width: 60%;
-  border: 1px solid #ddd;
   border-radius: 4px;
 }
 
@@ -97,6 +96,10 @@ body {
 
 .hasChanged {
   background-color:Tomato
+}
+
+#orderChangedIcon {
+  display: none;
 }
 
 .caption {

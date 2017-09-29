@@ -2,6 +2,7 @@
 $.widget( "figgy.filemanager", {
     options: {
         images: [],
+        original_order: [],
         selected: [],
         blank: {
           'id': '',
@@ -45,6 +46,9 @@ $.widget( "figgy.filemanager", {
         // Since jQuery UI is a dependency, we can lean on it
         // and look into optimizing with HTML5 native DnD if needed
         this.element.find( "#sortable" ).sortable({
+          create: function( event, ui ) {
+            this.original_order = $( "#sortable" ).sortable( "toArray" );
+          },
           update: function( event, ui ) {
             var sortedIDs = $( "#sortable" ).sortable( "toArray" );
             _this._saveSort(sortedIDs);
@@ -120,7 +124,7 @@ $.widget( "figgy.filemanager", {
       this.element.append( $form_panel )
     },
     _createControls: function() {
-      var $controls = $('<div class="controls"></div>')
+      var $controls = $('<div class="controls"><div id="orderChangedIcon" class="alert alert-info" role="alert"><i class="fa fa-exchange"></i> Page order has changed.</div></div>')
       var $button = $('<button id="save_btn" name="button" type="button" class="btn btn-lg btn-primary">Save</button>')
       $controls.append( $button )
       this.element.append( $controls )
@@ -200,6 +204,9 @@ $.widget( "figgy.filemanager", {
         return true
       }
     },
+    originalOrderChanged: function( sortedIDs ) {
+      return JSON.stringify(this.original_order) !== JSON.stringify(sortedIDs);
+    },
     _paintPages: function() {
       var totalImages = this.options.images.length
       _this = this
@@ -229,6 +236,12 @@ $.widget( "figgy.filemanager", {
         new_imgArr[i] = this.options.images[sortedIDs[i]];
       }
       this.options.images = new_imgArr;
+      console.log(this.originalOrderChanged( sortedIDs ))
+      if( this.originalOrderChanged( sortedIDs ) ) {
+        $( "#orderChangedIcon" ).show();
+      } else {
+        $( "#orderChangedIcon" ).hide();
+      }
     },
     _setOption: function( key, value ) {
         this._super( key, value );
