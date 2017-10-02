@@ -72,7 +72,15 @@ $.widget( "figgy.filemanager", {
     },
     _createGallery: function() {
       var $content = $('<div class="content"></div>')
+      var $gallery_controls = $('<div class="gallery_controls">' +
+          'Select: <button class="btn btn-default btn-sm"><i class="fa fa-th"></i> All</button>' +
+          '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> None</button>' +
+          '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> Alternate</button>' +
+          '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> Inverse</button>' +
+          // '<div id="img_sizer"><i style="height:16px;display:inline-block;" class="fa fa-image"></i> <input style="display:inline-block;" type="range" min="20" max="400" value="200"> <i style="height:32px;display:inline-block;" class="fa fa-image"></i></div>' +
+          '</div>')
       var $gallery = $('<div class="img_gallery" id="sortable" class="col-md-12"></div>')
+      $content.append( $gallery_controls )
       $content.append( $gallery )
       this.element.append( $content )
     },
