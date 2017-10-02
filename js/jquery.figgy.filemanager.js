@@ -2,7 +2,6 @@
 $.widget( "figgy.filemanager", {
     options: {
         images: [],
-        original_order: [],
         selected: [],
         blank: {
           'id': '',
@@ -15,6 +14,7 @@ $.widget( "figgy.filemanager", {
     },
     _create: function() {
         this.changeList = []
+        this.original_order = []
         this._createGallery()
         this._createDetailSidebar()
         this._createForm()
@@ -46,9 +46,6 @@ $.widget( "figgy.filemanager", {
         // Since jQuery UI is a dependency, we can lean on it
         // and look into optimizing with HTML5 native DnD if needed
         this.element.find( "#sortable" ).sortable({
-          create: function( event, ui ) {
-            this.original_order = $( "#sortable" ).sortable( "toArray" );
-          },
           update: function( event, ui ) {
             var sortedIDs = $( "#sortable" ).sortable( "toArray" );
             _this._saveSort(sortedIDs);
@@ -220,6 +217,10 @@ $.widget( "figgy.filemanager", {
         $( '#sortable' ).append($thumbnail)
       }
       this._paintSelected()
+      // set original order
+      if( this.original_order.length === 0 ){
+        this.original_order = $( "#sortable" ).sortable( "toArray" );
+      }
     },
     _paintSelected: function() {
       // loop through and add class to all the ids
@@ -236,7 +237,6 @@ $.widget( "figgy.filemanager", {
         new_imgArr[i] = this.options.images[sortedIDs[i]];
       }
       this.options.images = new_imgArr;
-      console.log(this.originalOrderChanged( sortedIDs ))
       if( this.originalOrderChanged( sortedIDs ) ) {
         $( "#orderChangedIcon" ).show();
       } else {
