@@ -19,6 +19,7 @@ body {
   height: calc(100% - 40px);
   border-radius: 4px;
   margin-bottom: 40px;
+  clear: both;
 }
 
 .gallery_controls {
