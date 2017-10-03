@@ -13,6 +13,8 @@ $.widget( "figgy.filemanager", {
         }
     },
     _create: function() {
+        this.thumb_pixel_width = 200
+        this.caption_pixel_padding = 9
         this.changeList = []
         this.original_order = []
         this._createGallery()
@@ -44,7 +46,15 @@ $.widget( "figgy.filemanager", {
 
         this._on(this.document, {
           'input[type=range]': function(event) {
-            $( '.thumbnail' ).css("max-width", event.target.value + 'px')
+            this.thumb_pixel_width = event.target.value
+            if( this.thumb_pixel_width < 75 ) {
+              this.caption_pixel_padding = 0
+              $( '.thumbnail .caption' ).css("padding", "0")
+            } else {
+              this.caption_pixel_padding = 9
+              $( '.thumbnail .caption' ).css("padding", "9px")
+            }
+            $( '.thumbnail' ).css("max-width", this.thumb_pixel_width + 'px' )
   				}
         });
 
@@ -222,10 +232,10 @@ $.widget( "figgy.filemanager", {
       _this = this
       for (var i = 0; i < totalImages; i++) {
         var item_state = _this.hasChanged(_this.options.images[i].id) ? 'hasChanged' : ''
-        var $thumbnail = $( "<div id='" + i + "' class='thumbnail " + item_state + "'></div>" )
+        var $thumbnail = $( "<div style='max-width:" + _this.thumb_pixel_width + "px;' id='" + i + "' class='thumbnail " + item_state + "'></div>" )
         img_markup = "<img class='thumb' id='" + _this.options.images[i].id + "' src='" +
               _this.options.images[i].url +
-              "'><div class='caption'>" + _this.options.images[i].label + "</div>"
+              "'><div style='padding:" + _this.caption_pixel_padding + "px;' class='caption'>" + _this.options.images[i].label + "</div>"
         $thumbnail.append(img_markup)
         $( '#sortable' ).append($thumbnail)
       }
