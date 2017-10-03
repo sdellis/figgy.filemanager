@@ -15,6 +15,7 @@ $.widget( "figgy.filemanager", {
     _create: function() {
         this.thumb_pixel_width = 200
         this.caption_pixel_padding = 9
+        this.sortedIDs = []
         this.changeList = []
         this.original_order = []
         this._createGallery()
@@ -89,8 +90,7 @@ $.widget( "figgy.filemanager", {
         // and look into optimizing with HTML5 native DnD if needed
         this.element.find( "#sortable" ).sortable({
           update: function( event, ui ) {
-            var sortedIDs = $( "#sortable" ).sortable( "toArray" );
-            _this._saveSort(sortedIDs);
+            _this._saveSort();
           }
         });
 
@@ -172,7 +172,8 @@ $.widget( "figgy.filemanager", {
     },
     _createControls: function() {
       var $controls = $('<div class="controls"><div id="orderChangedIcon" class="alert alert-info" role="alert"><i class="fa fa-exchange"></i> Page order has changed.</div></div>')
-      var $button = $('<button id="save_btn" name="button" type="button" class="btn btn-lg btn-primary">Save</button>')
+      var $button = $('<button id="save_btn" type="button" class="btn btn-lg btn-primary disabled">Save</button>')
+
       $controls.append( $button )
       this.element.append( $controls )
     },
@@ -274,8 +275,25 @@ $.widget( "figgy.filemanager", {
         return true
       }
     },
-    originalOrderChanged: function( sortedIDs ) {
-      return JSON.stringify(this.original_order) !== JSON.stringify(sortedIDs);
+    originalOrderChanged: function() {
+      if( this.sortedIDs.length == 0 ) { // if it has been sorted at least once
+        return false
+      } else {
+        return JSON.stringify(this.original_order) !== JSON.stringify(this.sortedIDs)
+      }
+    },
+    _paintControls: function() {
+      // disable/enable save button if anything has changed
+      if( this._saveWorthy() ){
+        $( "#save_btn" ).removeClass('disabled')
+      } else {
+        $( "#save_btn" ).addClass('disabled')
+      }
+      if( this.originalOrderChanged() ) {
+        $( "#orderChangedIcon" ).show();
+      } else {
+        $( "#orderChangedIcon" ).hide();
+      }
     },
     _paintPages: function() {
       var totalImages = this.options.images.length
@@ -303,28 +321,33 @@ $.widget( "figgy.filemanager", {
         element.className += " selected";
       }
     },
-    _saveSort: function( sortedIDs ) {
-      var new_imgArr = [];
-      var arrayLength = sortedIDs.length;
+    _saveSort: function() {
+      this.sortedIDs = $( "#sortable" ).sortable( "toArray" );
+      var new_imgArr = []
+      var arrayLength = this.sortedIDs.length
       for (var i = 0; i < arrayLength; i++) {
-        new_imgArr[i] = this.options.images[sortedIDs[i]];
+        new_imgArr[i] = this.options.images[this.sortedIDs[i]]
       }
-      this.options.images = new_imgArr;
-      if( this.originalOrderChanged( sortedIDs ) ) {
-        $( "#orderChangedIcon" ).show();
-      } else {
-        $( "#orderChangedIcon" ).hide();
-      }
+      this.options.images = new_imgArr
+      this._paintControls()
+    },
+    _saveWorthy: function( ) {
+        if( this.changeList.length || this.originalOrderChanged() ){
+          return true
+        } else {
+          return false
+        }
     },
     _setOption: function( key, value ) {
-        this._super( key, value );
+        this._super( key, value )
     },
     _setOptions: function( options ) {
-        this._super( options );
+        this._super( options )
     },
     refresh: function() {
       $( "#sortable" ).empty();
       this._paintPages()
+      this._paintControls()
     },
     reset: function() {
       this._destroy();
