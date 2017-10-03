@@ -37,6 +37,7 @@ $.widget( "figgy.filemanager", {
   				}
         });
 
+        // md form listeners
         this._on(this.document, {
           'input#label': function(event) {
             this.options.selected[0].label = $( '#label' ).val()
@@ -44,6 +45,7 @@ $.widget( "figgy.filemanager", {
   				}
         });
 
+        // gallery toolbar listeners
         this._on(this.document, {
           'input[type=range]': function(event) {
             this.thumb_pixel_width = event.target.value
@@ -56,6 +58,30 @@ $.widget( "figgy.filemanager", {
             }
             $( '.thumbnail' ).css("max-width", this.thumb_pixel_width + 'px' )
   				}
+        });
+
+        this._on(this.document, {
+  				'click#select_all_btn': function(event) {
+            _this.handleSelectAll()
+  				}
+  			});
+
+        this._on(this.document, {
+          'click#select_none_btn': function(event) {
+            _this.handleSelectNone()
+          }
+        });
+
+        this._on(this.document, {
+          'click#select_alternate_btn': function(event) {
+            _this.handleSelectAlternate()
+          }
+        });
+
+        this._on(this.document, {
+          'click#select_inverse_btn': function(event) {
+            _this.handleSelectInverse()
+          }
         });
 
         // Note: this relies on jQuery UI Sortable widget
@@ -89,10 +115,10 @@ $.widget( "figgy.filemanager", {
     _createGallery: function() {
       var $content = $('<div class="content"></div>')
       var $gallery_controls = $('<div class="gallery_controls">' +
-          'Select: <button class="btn btn-default btn-sm"><i class="fa fa-th"></i> All</button>' +
-          '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> None</button>' +
-          '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> Alternate</button>' +
-          '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> Inverse</button>' +
+          'Select: <button id="select_all_btn" class="btn btn-default btn-sm"><i class="fa fa-th"></i> All</button>' +
+          '<button id="select_none_btn" class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> None</button>' +
+          '<button id="select_alternate_btn"class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> Alternate</button>' +
+          '<button id="select_inverse_btn" class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> Inverse</button>' +
           '<div id="img_sizer"><i class="fa fa-image"></i> <input style="display:inline-block;" type="range" min="40" max="400" value="200"> <i class="fa fa-image fa-lg"></i></div>' +
           '</div>')
       var $gallery = $('<div class="img_gallery" id="sortable" class="col-md-12"></div>')
@@ -169,6 +195,30 @@ $.widget( "figgy.filemanager", {
       return this.options.selected.map(function(image) {
         return image.id
       }).indexOf(id)
+    },
+    handleSelectAll: function() {
+      this.options.selected = this.options.images
+      this._paintSelected()
+    },
+    handleSelectAlternate: function() {
+      this.options.selected = []
+      var img_total = this.options.images.length
+      for (i = 0; i < img_total; i=i+2) {
+        this.options.selected.push(this.options.images[i])
+      }
+      this._paintSelected()
+    },
+    handleSelectInverse: function() {
+      this.options.selected = []
+      var img_total = this.options.images.length
+      for (i = 1; i < img_total; i=i+2) {
+        this.options.selected.push(this.options.images[i])
+      }
+      this._paintSelected()
+    },
+    handleSelectNone: function() {
+      this.deselectAll()
+      this._paintSelected()
     },
     handleSelectPage: function( event ) {
       var image_id = $(event.target).find( "img" ).attr('id');
