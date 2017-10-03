@@ -42,6 +42,12 @@ $.widget( "figgy.filemanager", {
   				}
         });
 
+        this._on(this.document, {
+          'input[type=range]': function(event) {
+            $( '.thumbnail' ).css("max-width", event.target.value + 'px')
+  				}
+        });
+
         // Note: this relies on jQuery UI Sortable widget
         // Since jQuery UI is a dependency, we can lean on it
         // and look into optimizing with HTML5 native DnD if needed
@@ -77,7 +83,7 @@ $.widget( "figgy.filemanager", {
           '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> None</button>' +
           '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> Alternate</button>' +
           '<button class="btn btn-default btn-sm"><i class="fa fa-th fa-inverse"></i> Inverse</button>' +
-          // '<div id="img_sizer"><i style="height:16px;display:inline-block;" class="fa fa-image"></i> <input style="display:inline-block;" type="range" min="20" max="400" value="200"> <i style="height:32px;display:inline-block;" class="fa fa-image"></i></div>' +
+          '<div id="img_sizer"><i class="fa fa-image"></i> <input style="display:inline-block;" type="range" min="40" max="400" value="200"> <i class="fa fa-image fa-lg"></i></div>' +
           '</div>')
       var $gallery = $('<div class="img_gallery" id="sortable" class="col-md-12"></div>')
       $content.append( $gallery_controls )
@@ -177,7 +183,6 @@ $.widget( "figgy.filemanager", {
           $( '#noneSelected' ).show()
           break
         case 1:
-          console.log(this.options.selected)
           var selected = this.options.selected[0]
           $( '#label' ).val(selected.label)
           $( '#pageType option[value="'+ selected.pageType +'"]' ).prop('selected', true)
